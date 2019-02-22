@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.xiyu.mybatis.test.Interface1" >
+   <resultMap id="WenjianJianceJiluMap" type="com.xiyu.mybatis.bean。etlJob" >
+    <id column="JIANCE_ID" property="jianceId" />
+    <result column="WENJIAN_ID" property="wenjianId" />
+    <result column="WENJIAN_ID2" property="wenjianId2" />
+    <result column="YONGHU_ID" property="yonghuId" />
+    <result column="JIANCE_LX" property="jianceLx" />
+    <result column="JIANCE_LX_BM" property="jianceLxBm" />
+    <result column="JIANCE_SJ" property="jiancesj" />
+    <result column="JIANCE_ZT" property="status" />
+    <result column="EXTEND_ID1" property="EXTEND_ID1" />
+  </resultMap>
+  
+  
+    <update id="updateJianceJilu" parameterType="object">
+    update INFO_WENJIAN_JIANCE_JILU set JIANCE_ZT = #{status},EXTEND_ID1 = #{tempStr} where JIANCE_ID = #{jianceId} 
+	</update>
+	
+	 <update id="updateJianceJilu2" parameterType="object">
+    update INFO_WENJIAN_JIANCE_JILU set JIANCE_ZT = #{status} where JIANCE_ID = #{jianceId} 
+	</update>
+  
+  <select id="findJianCeJinduByCode" parameterType="object" resultMap="WenjianJianceJiluMap">
+  	SELECT * from INFO_WENJIAN_JIANCE_JILU 
+  	 where  WENJIAN_ID is not null and JIANCE_ZT = #{status} and JIANCE_LX_BM = #{code} and  JIANCE_ZT is not null  ORDER BY JIANCE_SJ  limit #{size}
+  </select>
+  
+   <select id="findJianCeJinduQueue" parameterType="object" resultMap="WenjianJianceJiluMap">
+  	SELECT * from INFO_WENJIAN_JIANCE_JILU 
+  	 where  WENJIAN_ID is not null and JIANCE_ZT = "ING"
+  </select>
+  
+  <select id="getByFile" parameterType="object" resultMap="WenjianJianceJiluMap">
+	SELECT * from INFO_WENJIAN_JIANCE_JILU where WENJIAN_ID = #{fileId} and JIANCE_LX  = #{tempName} ORDER BY JIANCE_SJ desc limit 1
+  </select>
+  
+  <select id="getByFileList" parameterType="object" resultMap="WenjianJianceJiluMap">
+	SELECT * from INFO_WENJIAN_JIANCE_JILU where WENJIAN_ID = #{fileId} ORDER BY JIANCE_SJ desc
+  </select>
+  
+  <select id="validationCheck" parameterType="object" resultType="String">
+  	SELECT JIANCE_ZT FROM	INFO_WENJIAN_JIANCE_JILU WHERE 	WENJIAN_ID = #{fileId} AND JIANCE_LX_BM = #{code}  ORDER BY JIANCE_SJ  desc limit 1
+  </select>
+  
+  <select id="getJianCountByXianMuId" parameterType="object" resultType="int">
+	SELECT count(*) from INFO_WENJIAN_JIANCE_JILU jj where 
+	jj.WENJIAN_ID in (
+	SELECT xx.WENJIAN_ID from INFO_WENJIAN_XINXI  xx where xx.XIANGMU_ID = #{xiangmuId}
+	<if test="type != null and type == '900068010205' ">
+		and xx.WENJIAN_LX_BM = #{type}
+	</if>
+	
+	<if test="type != null and type != '900068010205' ">
+		and xx.WENJIAN_LX_BM != "900068010205"
+	</if>
+	)
+	and jj.JIANCE_ZT in ("QUEUE","ING")
+  </select>
+  
+  <select id="getMinimumServer" parameterType="object" resultType="map">
+	SELECT EXTEND_ID1 server,count(*) count  from INFO_WENJIAN_JIANCE_JILU where JIANCE_ZT = "ING" and  EXTEND_ID1 is not null GROUP BY EXTEND_ID1 ORDER BY count  limit 1
+  </select>
+  
+  <select id="getServerList" parameterType="object" resultType="String">
+	SELECT EXTEND_ID1  from INFO_WENJIAN_JIANCE_JILU where JIANCE_ZT in ("QUEUE","ING")  and EXTEND_ID1 is not null
+  </select>
+  
+  <select id="lineUpCount" parameterType="object" resultType="int">
+  	select count(1) from INFO_WENJIAN_JIANCE_JILU where JIANCE_ZT is not null   and JIANCE_ZT = "QUEUE" and JIANCE_LX_BM = #{code} and JIANCE_SJ  &lt; #{time};
+  </select>
+</mapper>
